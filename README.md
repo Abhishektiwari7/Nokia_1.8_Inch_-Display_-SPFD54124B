@@ -6,7 +6,7 @@ this given lcd i found from a old nokia 105 mobile phone. indeed, i enjoyed the 
 i was thinking to make a youtube video on this display. just to share my experience.
 i don,t know but i really want this lcd with pcb to play around in electronics projects. 
 ## **SPFD54124B** Driver IC
-![plot](./docs/LCD_PInout.png)
+![plot](./docs/LCD_Pinout.png)
 
 # **Current Support: Arduino Uno, ESP8266 And ESP32 WROOM32**
 ## Goals
