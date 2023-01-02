@@ -1,0 +1,56 @@
+#######################################
+# Syntax Coloring Map Nokia 1.8 Inch Display SPFD54124B
+#######################################
+
+#######################################
+# Datatypes (KEYWORD1)
+#######################################
+
+Nokia105	KEYWORD1
+
+#######################################
+# Methods and Functions (KEYWORD2)
+#######################################
+initDisplay	KEYWORD2
+PWMinit	KEYWORD2
+setLcdBrightness	KEYWORD2
+setDrawPosition	KEYWORD2
+setDrawPositionAxis	KEYWORD2
+drawPixel	KEYWORD2
+image1d	KEYWORD2
+printDigit	KEYWORD2
+drawtext	KEYWORD2
+fillRectangle	KEYWORD2
+smpteTest	KEYWORD2
+printBitmap	KEYWORD2
+backgroundColor	KEYWORD2
+drawPixel	KEYWORD2
+colorPalletTest	KEYWORD2
+lineHorixontal	KEYWORD2
+lineVertical	KEYWORD2
+circle	KEYWORD2
+printSingleChar	KEYWORD2
+printStringChar	KEYWORD2
+printString	KEYWORD2
+displayClear	KEYWORD2
+writeNokiaCommand	KEYWORD2
+writeNokiaData	KEYWORD2
+hardwareSpiInit	KEYWORD2
+
+#######################################
+# Constants (LITERAL1)
+#######################################
+hwSPI	KEYWORD3
+SPIDEVICE_CS	KEYWORD3
+SPIDEVICE_RES	KEYWORD3
+SPIDEVICE_SDA	KEYWORD3
+SPIDEVICE_SCK	KEYWORD3
+csPort	KEYWORD3
+resetPort	KEYWORD3
+clockPort	KEYWORD3
+dataPort	KEYWORD3
+csPinMask	KEYWORD3
+clockPinMask	KEYWORD3
+dataPinMask	KEYWORD3
+resetPinMask	KEYWORD3
+spi_save	KEYWORD3
