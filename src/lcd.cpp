@@ -41,9 +41,9 @@ Nokia105::Nokia105(int8_t SDA, int8_t SCLK, int8_t RST, int8_t CS)
   #endif
   
   SPIDEVICE_SDA   = SDA; //Mosi
-  SPIDEVICE_SCK  = SCLK;
+  SPIDEVICE_SCK   = SCLK;
   SPIDEVICE_RES   = RST; //misO
-  SPIDEVICE_CS = CS;
+  SPIDEVICE_CS    = CS;
 
   #ifdef ARDUINO_ARCH_AVR
   csPort = portOutputRegister(digitalPinToPort(SPIDEVICE_CS));
@@ -65,13 +65,19 @@ Nokia105::Nokia105(int8_t SDA, int8_t SCLK, int8_t RST, int8_t CS)
   hwSPI = false;
 }
 
-void Nokia105::writeNokiaCommand (unsigned char Cmd) {
+void Nokia105::writeNokiaSPI (const char data,const char level) {
   if (hwSPI) {
     #ifdef ARDUINO_ARCH_AVR //still working on using hardware spi
     *csPort &= ~csPinMask;
     //command write
     SPCR = 0; // Disable SPI temporarily
-    *dataPort &= ~dataPinMask; // Clear 9th bit
+    if (level == 'C'|| level == 'c') {              //command 1st bit 0
+     *dataPort &= ~dataPinMask; // Clear 9th bit //command
+    } else if (level == 'D'|| level == 'd') {       //command 1st bit 1
+      *dataPort |= dataPinMask; // Set 9th bit //data
+    } else {
+      return;
+    }
     *clockPort |= clockPinMask; // Clock tick
     *clockPort &= ~clockPinMask; // tock
     SPCR = spi_save; // Re-enable SPI
@@ -86,15 +92,20 @@ void Nokia105::writeNokiaCommand (unsigned char Cmd) {
     #error This library only supports boards with an AVR, ESP32, and ESP8266 processor.
   #endif  
   } else {
-    uint8_t i,j;
     LCD_SCK_Low();          
     LCD_CS_Low();
-    LCD_SDA_Low();
+    if (level == 'C'|| level == 'c') {              //command 1st bit 0
+      LCD_SDA_Low();
+    } else if (level == 'D'|| level == 'd') {       //command 1st bit 1
+      LCD_SDA_High();
+    } else {
+      return;
+    }
     LCD_SCK_High();
     LCD_SCK_Low();  
-    j = 0x80;                         
-    for (i = 0; i < 8;i++) {
-      if (Cmd & j) {                                   
+    uint8_t j = 0x80;                         
+    for (uint8_t i = 0; i < 8;i++) {
+      if (data & j) {                                   
         LCD_SDA_High();   
         LCD_SCK_High();
         LCD_SCK_Low();
@@ -104,51 +115,6 @@ void Nokia105::writeNokiaCommand (unsigned char Cmd) {
         LCD_SCK_Low();
       }
       j=j>>1;                           
-    }
-    LCD_CS_High();
-  }
-}
-
-void Nokia105:: writeNokiaData (unsigned char Data) {
- if (hwSPI) {
-  #ifdef ARDUINO_ARCH_AVR //still working on using hardware spi
-    *csPort &= ~csPinMask;
-    //data/cmd transfer here
-    //data write
-    SPCR = 0; // Disable SPI temporarily
-    *dataPort |= dataPinMask; // Set 9th bit
-    *clockPort |= clockPinMask; // Clock tick
-    *clockPort &= ~clockPinMask; // tock
-    SPCR = spi_save; // Re-enable SPI
-    SPDR = Data; // Issue remaining 8 bits
-    while(!(SPSR & _BV(SPIF))); // Await completion
-    *csPort |= csPinMask;
-    #elif defined ARDUINO_ARCH_ESP32 
-    //add code here fpr esp32
-    #elif defined ARDUINO_ARCH_ESP8266 
-    //add code here for esp8266
-    #else 
-      #error This library only supports boards with an AVR, ESP32, and ESP8266 processor.
-    #endif
-  } else {
-    uint8_t i,j;
-    LCD_SCK_Low();          
-    LCD_CS_Low();
-    LCD_SDA_High();
-    LCD_SCK_High();
-    LCD_SCK_Low();
-    j = 0x80;                          
-    for (i = 0; i < 8;i++) {
-      if (Data & j) {                                   
-        LCD_SDA_High();
-        LCD_SCK_High();
-        LCD_SCK_Low();
-      } else {
-        LCD_SDA_Low();
-        LCD_SCK_High();
-        LCD_SCK_Low();
-      }
-      j=j>>1;                          
     }
     LCD_CS_High();
   }
@@ -173,24 +139,23 @@ if (hwSPI) {
 }
 
 void Nokia105:: displayClear(void) {
-unsigned int i;
-writeNokiaCommand(NOKIA105_CASET);    //x-addres 0 to 0x83 //Ox2a
-writeNokiaData(NOKIA105_NOP);         //xsta:BIT0-7 //0x00
-writeNokiaData(NOKIA105_NOP);         //xend:BIT0-7
-writeNokiaData(NOKIA105_NOP);         //xsta:BIT0-7
-writeNokiaData(0x83);                 //xend:BIT0-7
+writeNokiaSPI(NOKIA105_CASET,c);        // x-addres 0 to 0x83 //Ox2a
+writeNokiaSPI(NOKIA105_NOP,d);          // xsta:BIT0-7 //0x00
+writeNokiaSPI(NOKIA105_NOP,d);          // xend:BIT0-7
+writeNokiaSPI(NOKIA105_NOP,d);          // xsta:BIT0-7
+writeNokiaSPI(0x83,d);                  // xend:BIT0-7 //dec:131
 
-writeNokiaCommand(NOKIA105_PASET);    //y-address 0 to 0xa1 //0x2b
-writeNokiaData(NOKIA105_NOP);         //Ysta:BIT0-7
-writeNokiaData(NOKIA105_NOP);         //xend:BIT0-7
-writeNokiaData(NOKIA105_NOP);         //xsta:BIT0-7
-writeNokiaData(0xa1);                 //xend:BIT0-7
+writeNokiaSPI(NOKIA105_PASET,c);        // y-address 0 to 0xa1 //0x2b
+writeNokiaSPI(NOKIA105_NOP,d);          // Ysta:BIT0-7
+writeNokiaSPI(NOKIA105_NOP,d);          // xend:BIT0-7
+writeNokiaSPI(NOKIA105_NOP,d);          // xsta:BIT0-7
+writeNokiaSPI(0xa1,d);                  // xend:BIT0-7 //dec:161 
 
-writeNokiaCommand(NOKIA105_RAMWR);     //RAMWR //0x2c
-  
-for(i=0; i < totalPixals; i++) {
-  writeNokiaData(NOKIA105_NOP);
-  writeNokiaData(NOKIA105_NOP);
+writeNokiaSPI(NOKIA105_RAMWR,c);        // RAMWR //0x2c
+
+for (unsigned int i = 0; i < totalPixals; i++) {
+  writeNokiaSPI(NOKIA105_NOP,d);
+  writeNokiaSPI(NOKIA105_NOP,d);
 }
 }
 
@@ -204,43 +169,42 @@ LCD_RES_Low();
 delay(10);
 LCD_RES_High();
 delay(10);
-writeNokiaCommand(NOKIA105_SPLOUT); //delay,sleep out//0x11
+writeNokiaSPI(NOKIA105_SPLOUT,c);    // vTaskDelay,sleep out//0x11    
 delay(10);
-writeNokiaCommand(NOKIA105_COLMOD);          //Interface pixel format:bit1,2,3 //0x3a, color mode
-writeNokiaData(0x05);         // 16 bit color
-//writeNokiaData(0x02);       // 8 bit color
+writeNokiaSPI(NOKIA105_COLMOD,c);    // Interface pixel format:bit1,2,3 //0x3a, color mode
+writeNokiaSPI(0x05,d);               // 16 bit color
+//writeNokiaSPI(0x02,d);             // 8 bit color
 
 if (RGB2BGR == 0) {
-  writeNokiaCommand(NOKIA105_MADCTL);  //CMD_MADCTR
-  writeNokiaData(0x00);                // RGB
-} else if (RGB2BGR == 1) {
-  writeNokiaCommand(NOKIA105_MADCTL);  //CMD_MADCTR
-  writeNokiaData(0x08);                // BGR
+  writeNokiaSPI(NOKIA105_MADCTL,c); // CMD_MADCTR
+  writeNokiaSPI(0x00,d);               // RGB
 }
-
-//writeNokiaCommand(NOKIA105_INVON);    // inversion on
-//writeNokiaCommand(NOKIA105_INVOFF);   // inversion off
-//writeNokiaCommand(NOKIA105_GAMSET);   // gamma curve
-//writeNokiaData(0x01);                 // set: 0x01,0x02,0x04,0x08
-
-writeNokiaCommand(NOKIA105_DISPON);          //Display on,0x29=ON,0x28=OFF
+else if (RGB2BGR == 1) {
+  writeNokiaSPI(NOKIA105_MADCTL,c); // CMD_MADCTR
+  writeNokiaSPI(0x08,d);               // BGR
+}
+// writeNokiaSPI(NOKIA105_INVON,c);    // inversion on
+// writeNokiaSPI(NOKIA105_INVOFF,c);   // inversion off
+// writeNokiaSPI(NOKIA105_GAMSET,c);   // gamma curve
+// writeNokiaSPI(0x01,d);              // set: 0x01,0x02,0x04,0x08
+writeNokiaSPI(NOKIA105_DISPON,c);      // Display on,0x29=ON,0x28=OFF
 displayClear();
 }
 
 void Nokia105:: setDrawPosition(unsigned char x, unsigned char y) {
-writeNokiaCommand(NOKIA105_CASET);      //x-addres//0x2a
-writeNokiaData(NOKIA105_NOP);           //xsta:BIT0-7
-writeNokiaData(x+2);                    //xsta:BIT0-7
-writeNokiaData(NOKIA105_NOP);           //xend:BIT0-7
-writeNokiaData(0x83);                   //xend:BIT0-7
+writeNokiaSPI(NOKIA105_CASET,c);      //x-addres//0x2a
+writeNokiaSPI(NOKIA105_NOP,d);           //xsta:BIT0-7
+writeNokiaSPI(x+2,d);                    //xsta:BIT0-7
+writeNokiaSPI(NOKIA105_NOP,d);           //xend:BIT0-7
+writeNokiaSPI(0x83,d);                   //xend:BIT0-7
 
-writeNokiaCommand(NOKIA105_PASET);      //y-address //0x2b
-writeNokiaData(NOKIA105_NOP);           //xend:BIT0-7
-writeNokiaData(y);                      //Ysta:BIT0-7
-writeNokiaData(NOKIA105_NOP);           //xend:BIT0-7
-writeNokiaData(0xA1);                   //xend:BIT0-7
+writeNokiaSPI(NOKIA105_PASET,c);      //y-address //0x2b
+writeNokiaSPI(NOKIA105_NOP,d);           //xend:BIT0-7
+writeNokiaSPI(y,d);                      //Ysta:BIT0-7
+writeNokiaSPI(NOKIA105_NOP,d);           //xend:BIT0-7
+writeNokiaSPI(0xA1,d);                   //xend:BIT0-7
 
-writeNokiaCommand(NOKIA105_RAMWR);      //RAMWR//0x2c
+writeNokiaSPI(NOKIA105_RAMWR,c);      //RAMWR//0x2c
 }
 
 
@@ -277,15 +241,15 @@ switch(rotation) {
     break;
 }
 
-writeNokiaCommand(NOKIA105_CASET); // Column addr set//0x2a
-writeNokiaData(0); writeNokiaData(x0);   // X start
-writeNokiaData(0); writeNokiaData(x1);   // X end
+writeNokiaSPI(NOKIA105_CASET,c); // Column addr set//0x2a
+writeNokiaSPI(0,d); writeNokiaSPI(x0,d);   // X start
+writeNokiaSPI(0,d); writeNokiaSPI(x1,d);   // X end
 
-writeNokiaCommand(NOKIA105_PASET); // Page addr set 0x2b
-writeNokiaData(0); writeNokiaData(y0);   // Y start
-writeNokiaData(0); writeNokiaData(y1);   // Y end
+writeNokiaSPI(NOKIA105_PASET,c); // Page addr set 0x2b
+writeNokiaSPI(0,d); writeNokiaSPI(y0,d);   // Y start
+writeNokiaSPI(0,d); writeNokiaSPI(y1,d);   // Y end
 
-writeNokiaCommand(NOKIA105_RAMWR);//0x2c
+writeNokiaSPI(NOKIA105_RAMWR,c);//0x2c
 }
 
 
@@ -294,8 +258,8 @@ if ((x < 0) || (x >= WIDTH) || (y < 0) || (y >= HEIGHT))
     return;
 
 setDrawPositionAxis(x, y, x, y);
-writeNokiaData(color >> 8);
-writeNokiaData(color);
+writeNokiaSPI(color >> 8,d);
+writeNokiaSPI(color,d);
 }
 
 
@@ -331,11 +295,11 @@ for (Mline = 0; Mline < 16; Mline++) {
   Ctemp = text[c][Mline];
   for(k = 0; k < 8; k++) {
     if(Ctemp & 0x80) {
-      writeNokiaData(color>>8); 
-      writeNokiaData(color);
+      writeNokiaSPI(color>>8,d); 
+      writeNokiaSPI(color,d);
     } else {
-      writeNokiaData(0x00>>8); 
-      writeNokiaData(0x00);
+      writeNokiaSPI(0x00,d); 
+      writeNokiaSPI(0x00,d);
     }
     Ctemp=Ctemp>>1;
   }
@@ -361,8 +325,8 @@ uint8_t hi = color >> 8, lo = color;
 int32_t i  = (int32_t)w * (int32_t)h;
 
 while(i--) {
-   writeNokiaData(hi);
-   writeNokiaData(lo);
+  writeNokiaSPI(hi,d);
+  writeNokiaSPI(lo,d);
 }
 }
 
@@ -402,8 +366,8 @@ setDrawPositionAxis(0, 0, WIDTH-1, HEIGHT-1);
 
 for( y = HEIGHT; y > 0; y--) {
   for(x = WIDTH; x > 0; x--) {
-    writeNokiaData(hi);
-    writeNokiaData(lo);
+    writeNokiaSPI(hi,d);
+    writeNokiaSPI(lo,d);
   }
 }
 }
@@ -501,8 +465,8 @@ setDrawPositionAxis(x, y, x, y+h-1);
 
 uint8_t hi = color >> 8, lo = color;
 while (h--) {
-  writeNokiaData(hi);
-  writeNokiaData(lo);
+  writeNokiaSPI(hi,d);
+  writeNokiaSPI(lo,d);
 }
 }
 
@@ -525,8 +489,8 @@ setDrawPositionAxis(x, y, x+w-1, y);
 
 uint8_t hi = color >> 8, lo = color;
 while (w--) {
-  writeNokiaData(hi);
-  writeNokiaData(lo);
+  writeNokiaSPI(hi,d);
+  writeNokiaSPI(lo,d);
 }
 }
 
@@ -539,11 +503,11 @@ for (Mline = 0; Mline < 16; Mline++) { //font has 16 rows of data
   Ctemp = font8x16[c][Mline]; //one row extracted put in ctemp
   for(k = 0; k < 8; k++) { //ctemp, each rows has 8 bit of data of font or char
     if(Ctemp & 0x01) { //LSB, true: character bi present
-      writeNokiaData(forgroundColor>>8); //print color at that position
-      writeNokiaData(forgroundColor);
+      writeNokiaSPI(forgroundColor>>8,d); //print color at that position
+      writeNokiaSPI(forgroundColor,d);
     } else {
-      writeNokiaData(backgroundColor>>8); //BACKGOUND color
-      writeNokiaData(backgroundColor);
+      writeNokiaSPI(backgroundColor>>8,d); //BACKGOUND color
+      writeNokiaSPI(backgroundColor,d);
     }
     Ctemp=Ctemp>>1; //next bit of data of current row
   }

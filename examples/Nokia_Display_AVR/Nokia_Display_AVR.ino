@@ -41,26 +41,10 @@
 //-----------------------
 */
 //Currently GFX library is not for AVR Microcontroller
-#ifdef ARDUINO_ARCH_AVR
 const int _CS         = 10;
 const int _RESET      = 12;
 const int SCLK        = 13;
 const int SID         = 11; //Mosi
-
-#elif defined ARDUINO_ARCH_ESP32
-const int _CS         = 18;
-const int _RESET      = 19;
-const int SCLK        = 23;
-const int SID         = 21; //Mosi
-
-#elif defined ARDUINO_ARCH_ESP8266 
-const int _CS         = 15;          
-const int _RESET      = 16;       
-const int SCLK        = 14;  
-const int SID         = 13; //Mosi
-#else 
-    #error This library only supports boards with an AVR, ESP32, and ESP8266 processor.
-#endif 
 
 #include <lcd.h>
 #include <image.h>

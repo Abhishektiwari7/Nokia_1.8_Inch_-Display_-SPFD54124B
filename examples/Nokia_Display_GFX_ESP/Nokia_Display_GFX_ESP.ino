@@ -50,27 +50,27 @@ const int SCLK        = 13;
 const int SID         = 11; //Mosi
 
 #elif defined ARDUINO_ARCH_ESP32
-const int _CS         = 18;
+const int _CS         = 15;
 const int _RESET      = 19;
-const int SCLK        = 23;
-const int SID         = 21; //Mosi
-
+const int SCLK        = 18;
+const int SID         = 23; //Mosi
+#include <Adafruit_GFX.h>
 #elif defined ARDUINO_ARCH_ESP8266 
 const int _CS         = 15;          
 const int _RESET      = 16;       
 const int SCLK        = 14;  
 const int SID         = 13; //Mosi
+#include <Adafruit_GFX.h>
 #else 
     #error This library only supports boards with an AVR, ESP32, and ESP8266 processor.
 #endif  
 
-#include <Adafruit_GFX.h>
 #include <lcd.h>
 #include <image.h>
 
 #define BAUD_RATE     9600
 //Arduino uno: PWM Brightness pin 9: PB1: 15: OC1A
-//ESP32: PWM Brightness pin 2
+//ESP32: PWM Brightness pin 4
 Nokia105 display( SID,  SCLK, _RESET, _CS);
 
 void setup() {

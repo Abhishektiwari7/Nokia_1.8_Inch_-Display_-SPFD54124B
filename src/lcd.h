@@ -52,7 +52,7 @@
 const int freq         = 200; //hz
 const int ledChannel   = 0; //channel0
 const int resolution   = 12; //12bit
-const int backLightPin = 2;//digital pin 2
+const int backLightPin = 4;//digital pin 4
 
 #elif defined ARDUINO_ARCH_ESP8266 
 #include "Adafruit_GFX.h"
@@ -322,22 +322,14 @@ class Nokia105
   /**********************************************************************/
 
 	private:
-  void	writeNokiaCommand(unsigned char c),
+  void	writeNokiaSPI(const char data,const char level),
   /**********************************************************************/
   /*!
-    @brief    write SPI command to nokia display
-    @param    
+    @brief    write SPI command/Data to nokia display
+    @param    8 bit data plus command/data bit
   */
   /**********************************************************************/
 	
-	writeNokiaData(unsigned char c),
-  /**********************************************************************/
-  /*!
-    @brief    write SPI data to nokia display
-    @param    
-  */
-  /**********************************************************************/
-  
   hardwareSpiInit(bool hwSPI);
   /**********************************************************************/
   /*!
@@ -347,11 +339,15 @@ class Nokia105
   /**********************************************************************/
   
   bool hwSPI; //use gpio or spi interface hardware
+  const char c = 'c';
+  const char d = 'd'; //command, data level indication
+  const char C = 'C';
+  const char D = 'D'; //command, data level indication
 
   int8_t	SPIDEVICE_CS,
-				      SPIDEVICE_RES,  //miso
-				      SPIDEVICE_SDA,	//Mosi
-				      SPIDEVICE_SCK;
+				  SPIDEVICE_RES,  //miso
+				  SPIDEVICE_SDA,	//Mosi
+				  SPIDEVICE_SCK;
     //-----------------------bit bang--------------------------------------
   volatile uint8_t *csPort,
                   *resetPort,
