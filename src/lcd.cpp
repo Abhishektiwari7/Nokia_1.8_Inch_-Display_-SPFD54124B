@@ -81,7 +81,7 @@ void Nokia105::writeNokiaSPI (const char data,const char level) {
     *clockPort |= clockPinMask; // Clock tick
     *clockPort &= ~clockPinMask; // tock
     SPCR = spi_save; // Re-enable SPI
-    SPDR = Cmd; // Issue remaining 8 bits
+    SPDR = data; // Issue remaining 8 bits
     while(!(SPSR & _BV(SPIF))); // Await completion
     *csPort |= csPinMask;
   #elif defined ARDUINO_ARCH_ESP32 
