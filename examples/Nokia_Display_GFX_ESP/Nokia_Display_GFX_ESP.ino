@@ -202,7 +202,7 @@ void displayFunctions(int test) {
     break;
   
   case 26:
-    display.printDigit(100,10,10,GREEN,BLACK);
+    display.printDigitInteger(111000999,40,40,GREEN,BLACK); //limit 999,999,999
     break;
   
   case 27:
@@ -316,8 +316,11 @@ void displayFunctions(int test) {
     display.drawChar(1, 1, 'A', WHITE,GREEN, 5, 5); //STRECHdisplay.setTextColor(WHITE);
     break;
   
-  case 54:
-    //code
+  case 54: {
+      float Fnum = 12345.1113;
+      uint8_t digits = 4;
+      display.printDigitFloat(Fnum,digits,1,10,GREEN,BLACK);
+    }
     break;
   case 55:
     //code

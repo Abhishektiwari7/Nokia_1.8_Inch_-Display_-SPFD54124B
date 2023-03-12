@@ -182,11 +182,18 @@ void displayFunctions(int test) {
     break;
   
   case 26:
-    display.printDigit(100,10,10,GREEN,BLACK);
+    display.printDigitInteger(111000999,40,40,GREEN,BLACK); //limit 999,999,999
     break;
   
   case 27:
     display.printString("a",0,2,GREEN,BLACK);
+    break;
+
+  case 28: {
+      float Fnum = 12345.1113;
+      uint8_t digits = 4;
+      display.printDigitFloat(Fnum,digits,1,10,GREEN,BLACK);
+    }
     break;
 
   default:
